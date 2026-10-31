@@ -595,6 +595,12 @@ func newCancelRequest(inviteRequest *sip.Request) *sip.Request {
 	cancelReq.AppendHeader(sip.HeaderClone(inviteRequest.CallID()))
 	sip.CopyHeaders("Route", inviteRequest, cancelReq)
 	cancelReq.SetSource(inviteRequest.Source())
+	// RFC 3261 §9.1: a CANCEL is sent where the INVITE was sent. When the
+	// caller dialled the INVITE at an explicit destination (SetDestination,
+	// e.g. an outbound proxy addressed without a Route header) the CANCEL
+	// must take the same destination, or it falls back to the Request-URI
+	// and reaches the wrong host. sip.newCancelRequest already does this.
+	cancelReq.SetDestination(inviteRequest.Destination())
 	cancelReq.Laddr = inviteRequest.Laddr
 	return cancelReq
 }
